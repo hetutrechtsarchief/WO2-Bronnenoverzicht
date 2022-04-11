@@ -42,6 +42,11 @@ for row in csv.DictReader(open(input_filepath)): # dit is een combinatie van 'CS
 		# strip rubriek code from title
 		rubriek_code = row["BOVENLIGGENDE_BESCHRIJVING"].split(". ")[0]
 		rubriek_code += "."
+
+		# print(row["STUK_BESCHRIJVING"])
+		# print(rubriek_code.split("."))
+		# sys.exit()
+
 		if rubriek_code[0].isdigit():
 			row["BOVENLIGGENDE_BESCHRIJVING"] = row["BOVENLIGGENDE_BESCHRIJVING"].replace(rubriek_code, "").strip()
 
@@ -67,6 +72,27 @@ lijst_met_toppen = []
 for top in dict_met_toppen.values():
 	lijst_met_toppen.append(top)
 lijst_met_toppen = sorted(lijst_met_toppen, key=itemgetter('sortcode')) 
+
+
+for top in lijst_met_toppen:
+	# print(top["items"].values())
+	for rubriek in top["items"].values():
+		# print(rubriek)
+		items_in_rubriek = rubriek["items"].values()
+		lijst_met_items_rubriek = []
+		for stuk in items_in_rubriek:
+
+			code = stuk["code"]
+			code_splitted = code.split('-')
+			code_left = ("0"*4 + code_splitted[0])[-4:]
+			code_right = ("0"*4 + (code_splitted[1] if len(code_splitted)>1 else ""))[-4:]
+			stuk["sortcode"] = code_left + "-" + code_right
+			lijst_met_items_rubriek.append(stuk)
+
+		lijst_met_items_rubriek = sorted(lijst_met_items_rubriek, key=itemgetter('sortcode'))
+
+		rubriek["items"] = lijst_met_items_rubriek
+
 
 json.dump(lijst_met_toppen, open(output_json_filepath, "w"), indent=2)
 
@@ -94,7 +120,7 @@ for top in lijst_met_toppen:
 		print(f'<div class="bovenliggend">{bovenliggende_beschrijving}</div>') # begin van bovenliggende items
 
 		print('<table class="items" width="100%">')
-		for stuk_key,stuk in boven["items"].items():
+		for stuk in boven["items"]: #.items():
 			stuk_beschrijving = stuk["beschrijving"]
 			code = stuk["code"]
 			guid = stuk["GUID"]
